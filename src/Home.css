@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
+
+.Container{
+    display: flex;
+    margin: 0 auto;
+    width: 90vw;
+}
+.row{
+    flex-grow: 1;
+    max-width: 100%;
+    padding: 10px;
+}
+
+.SelectContainer{
+    width: 100vw;
+    height: 200px;
+    display: block;    
+    background-image: url("./assets/banner.png");
+    background-size: contain;
+    background-color: #2a2c2e;
+    background-repeat: no-repeat;
+    background-position-x: center;
+}
+.ButtonSelect{
+    background-color: #1DA6CC;
+    width: auto;
+    float: left;
+    margin: 150px 10px 0 10px;
+    border-radius: 5px;
+    color: #fff;
+    text-decoration: none;
+    font-family: 'Montserrat', sans-serif;
+    padding: 10px;
+    vertical-align: middle;
+    vertical-align: -moz-middle-with-baseline;
+}
+.content-text{
+    width: 400px;
+    text-align: left;
+    background: aquamarine;
+    margin-top: 40px;
+}
+.content-text h1{
+    text-align: center;
+}
+.generalText{
+    text-align: left;
+}
+.tags a{
+    margin-right: 10px;
+}
+.tag-img{
+    border-radius: 5px;
+}
