@@ -1,68 +1,269 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<img align="right" width="200" src="http://static.nfl.com/static/content/public/static/img/logos/react-helmet.jpg" />
 
-## Available Scripts
+# React Helmet
 
-In the project directory, you can run:
+[![npm Version](https://img.shields.io/npm/v/react-helmet.svg?style=flat-square)](https://www.npmjs.org/package/react-helmet)
+[![codecov.io](https://img.shields.io/codecov/c/github/nfl/react-helmet.svg?branch=master&style=flat-square)](https://codecov.io/github/nfl/react-helmet?branch=master)
+[![Build Status](https://img.shields.io/travis/nfl/react-helmet/master.svg?style=flat-square)](https://travis-ci.org/nfl/react-helmet)
+[![Dependency Status](https://img.shields.io/david/nfl/react-helmet.svg?style=flat-square)](https://david-dm.org/nfl/react-helmet)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md#pull-requests)
 
-### `npm start`
+This reusable React component will manage all of your changes to the document head.
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Helmet _takes_ plain HTML tags and _outputs_ plain HTML tags. It's dead simple, and React beginner friendly.
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+## [6.0.0-beta Release Notes](https://github.com/nfl/react-helmet/wiki/Upgrade-from-5.x.x----6.x.x-beta)
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Example
+```javascript
+import React from "react";
+import {Helmet} from "react-helmet";
 
-### `npm run build`
+class Application extends React.Component {
+  render () {
+    return (
+        <div className="application">
+            <Helmet>
+                <meta charSet="utf-8" />
+                <title>My Title</title>
+                <link rel="canonical" href="http://mysite.com/example" />
+            </Helmet>
+            ...
+        </div>
+    );
+  }
+};
+```
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Nested or latter components will override duplicate changes:
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+```javascript
+<Parent>
+    <Helmet>
+        <title>My Title</title>
+        <meta name="description" content="Helmet application" />
+    </Helmet>
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    <Child>
+        <Helmet>
+            <title>Nested Title</title>
+            <meta name="description" content="Nested component" />
+        </Helmet>
+    </Child>
+</Parent>
+```
 
-### `npm run eject`
+outputs:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```html
+<head>
+    <title>Nested Title</title>
+    <meta name="description" content="Nested component">
+</head>
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+See below for a full reference guide.
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Features
+- Supports all valid head tags: `title`, `base`, `meta`, `link`, `script`, `noscript`, and `style` tags.
+- Supports attributes for `body`, `html` and `title` tags.
+- Supports server-side rendering.
+- Nested components override duplicate head changes.
+- Duplicate head changes are preserved when specified in the same component (support for tags like "apple-touch-icon").
+- Callback for tracking DOM changes.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Compatibility
 
-## Learn More
+Helmet 5 is fully backward-compatible with previous Helmet releases, so you can upgrade at any time without fear of breaking changes. We encourage you to update your code to our more semantic API, but please feel free to do so at your own pace.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Installation
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Yarn:
+```bash
+yarn add react-helmet
+```
 
-### Code Splitting
+npm:
+```bash
+npm install --save react-helmet
+```
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+## Server Usage
+To use on the server, call `Helmet.renderStatic()` after `ReactDOMServer.renderToString` or `ReactDOMServer.renderToStaticMarkup` to get the head data for use in your prerender.
 
-### Analyzing the Bundle Size
+Because this component keeps track of mounted instances, **you have to make sure to call `renderStatic` on server**, or you'll get a memory leak.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+```javascript
+ReactDOMServer.renderToString(<Handler />);
+const helmet = Helmet.renderStatic();
+```
 
-### Making a Progressive Web App
+This `helmet` instance contains the following properties:
+- `base`
+- `bodyAttributes`
+- `htmlAttributes`
+- `link`
+- `meta`
+- `noscript`
+- `script`
+- `style`
+- `title`
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+Each property contains `toComponent()` and `toString()` methods. Use whichever is appropriate for your environment. For attributes, use the JSX spread operator on the object returned by `toComponent()`. E.g:
 
-### Advanced Configuration
+### As string output
+```javascript
+const html = `
+    <!doctype html>
+    <html ${helmet.htmlAttributes.toString()}>
+        <head>
+            ${helmet.title.toString()}
+            ${helmet.meta.toString()}
+            ${helmet.link.toString()}
+        </head>
+        <body ${helmet.bodyAttributes.toString()}>
+            <div id="content">
+                // React stuff here
+            </div>
+        </body>
+    </html>
+`;
+```
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+### As React components
+```javascript
+function HTML () {
+    const htmlAttrs = helmet.htmlAttributes.toComponent();
+    const bodyAttrs = helmet.bodyAttributes.toComponent();
 
-### Deployment
+    return (
+        <html {...htmlAttrs}>
+            <head>
+                {helmet.title.toComponent()}
+                {helmet.meta.toComponent()}
+                {helmet.link.toComponent()}
+            </head>
+            <body {...bodyAttrs}>
+                <div id="content">
+                    // React stuff here
+                </div>
+            </body>
+        </html>
+    );
+}
+```
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+### Note: Use the same instance
+If you are using a prebuilt compilation of your app with webpack in the server be sure to include this in the `webpack file` so that the same instance of `react-helmet` is used.
+```
+externals: ["react-helmet"],
+```
+Or to import the *react-helmet* instance from the app on the server.
 
-### `npm run build` fails to minify
+### Reference Guide
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+```javascript
+<Helmet
+    {/* (optional) set to false to disable string encoding (server-only) */}
+    encodeSpecialCharacters={true}
+
+    {/*
+        (optional) Useful when you want titles to inherit from a template:
+
+        <Helmet
+            titleTemplate="%s | MyAwesomeWebsite.com"
+        >
+            <title>Nested Title</title>
+        </Helmet>
+
+        outputs:
+
+        <head>
+            <title>Nested Title | MyAwesomeWebsite.com</title>
+        </head>
+    */}
+    titleTemplate="MySite.com - %s"
+
+    {/*
+        (optional) used as a fallback when a template exists but a title is not defined
+
+        <Helmet
+            defaultTitle="My Site"
+            titleTemplate="My Site - %s"
+        />
+
+        outputs:
+
+        <head>
+            <title>My Site</title>
+        </head>
+    */}
+    defaultTitle="My Default Title"
+
+    {/* (optional) callback that tracks DOM changes */}
+    onChangeClientState={(newState, addedTags, removedTags) => console.log(newState, addedTags, removedTags)}
+>
+    {/* html attributes */}
+    <html lang="en" amp />
+
+    {/* body attributes */}
+    <body className="root" />
+
+    {/* title attributes and value */}
+    <title itemProp="name" lang="en">My Plain Title or {`dynamic`} title</title>
+
+    {/* base element */}
+    <base target="_blank" href="http://mysite.com/" />
+
+    {/* multiple meta elements */}
+    <meta name="description" content="Helmet application" />
+    <meta property="og:type" content="article" />
+
+    {/* multiple link elements */}
+    <link rel="canonical" href="http://mysite.com/example" />
+    <link rel="apple-touch-icon" href="http://mysite.com/img/apple-touch-icon-57x57.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="http://mysite.com/img/apple-touch-icon-72x72.png" />
+    {locales.map((locale) => {
+        <link rel="alternate" href="http://example.com/{locale}" hrefLang={locale} key={locale}/>
+    })}
+
+    {/* multiple script elements */}
+    <script src="http://include.com/pathtojs.js" type="text/javascript" />
+
+    {/* inline script elements */}
+    <script type="application/ld+json">{`
+        {
+            "@context": "http://schema.org"
+        }
+    `}</script>
+
+    {/* noscript elements */}
+    <noscript>{`
+        <link rel="stylesheet" type="text/css" href="foo.css" />
+    `}</noscript>
+
+    {/* inline style elements */}
+    <style type="text/css">{`
+        body {
+            background-color: blue;
+        }
+
+        p {
+            font-size: 12px;
+        }
+    `}</style>
+</Helmet>
+```
+
+## Contributing to this project
+Please take a moment to review the [guidelines for contributing](CONTRIBUTING.md).
+
+* [Pull requests](CONTRIBUTING.md#pull-requests)
+* [Development Process](CONTRIBUTING.md#development)
+
+## License
+
+MIT
+
+<img align="left" height="200" src="http://static.nfl.com/static/content/public/static/img/logos/ENG_SigilLockup_4C_POS_RGB.png" />
